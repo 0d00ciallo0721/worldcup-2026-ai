@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026世界杯 · AI深度分析</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="header">
+  <h1>🏆 2026 世界杯 · AI 深度分析</h1>
+  <p class="subtitle">48队 · 72场小组赛 · 球员分层 · AI优劣势分析（不做预测）</p>
+</header>
+
+<main class="container">
+
+  <!-- ── 球队分组卡片 ── -->
+  <section class="groups-overview">
+    {% for group_name, team_list in groups.items() %}
+    <div class="group-card">
+      <h3 class="group-label">{{ group_name }} 组</h3>
+      <div class="group-teams">
+        {% for team in team_list %}
+        <a href="/team/{{ team.id }}" class="team-chip">
+          {{ team.name }}
+          {% if team.fifa_rank %}<span class="chip-rank">#{{ team.fifa_rank }}</span>{% endif %}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <!-- ── 赛程时间线 ── -->
+  <section class="schedule-timeline">
+    <h2>📅 完整小组赛程（北京时间）</h2>
+
+    {% set current_date = namespace(value='') %}
+    {% for m in all_matches %}
+      {% set date_part = m.match_date.split(' ')[0] %}
+      {% if date_part != current_date.value %}
+        {% set current_date.value = date_part %}
+        <div class="date-divider">
+          <span class="date-badge">{{ date_part }}</span>
+          <span class="date-weekday"></span>
+        </div>
+      {% endif %}
+
+      <div class="match-row">
+        <span class="match-time">{{ m.match_date.split(' ')[1] }}</span>
+        <span class="match-group-tag">{{ m.group_name }}组</span>
+        <a href="/team/{{ m.team_a.id }}" class="match-team">
+          {{ m.team_a.name }}
+          <em>{{ m.team_a.fifa_code }}</em>
+          {% if m.team_a.fifa_rank %}<span class="rank-tag">#{{ m.team_a.fifa_rank }}</span>{% endif %}
+        </a>
+        <span class="match-vs">VS</span>
+        <a href="/team/{{ m.team_b.id }}" class="match-team">
+          {{ m.team_b.name }}
+          <em>{{ m.team_b.fifa_code }}</em>
+          {% if m.team_b.fifa_rank %}<span class="rank-tag">#{{ m.team_b.fifa_rank }}</span>{% endif %}
+        </a>
+        <span class="match-venue">{{ m.venue }}</span>
+        <a href="/match/{{ m.id }}" class="btn-analysis">AI分析</a>
+      </div>
+    {% endfor %}
+  </section>
+
+</main>
+
+<footer class="footer">
+  数据来源：FIFA官方抽签结果（2025年12月5日）+ 各队官宣26人名单 · AI分析仅供参考 · 不构成预测或投注建议
+</footer>
+</body>
+</html>

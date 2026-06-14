@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% if match %}
+<title>{{ team_a.name }} vs {{ team_b.name }} - AI分析</title>
+{% else %}
+<title>比赛未找到</title>
+{% endif %}
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{% if match %}
+<header class="header match-header">
+  <div class="vs-title">
+    <span class="team-a">{{ team_a.name }} <em>{{ team_a.fifa_code }}</em></span>
+    <span class="vs">VS</span>
+    <span class="team-b">{{ team_b.name }} <em>{{ team_b.fifa_code }}</em></span>
+  </div>
+  <p class="subtitle">{{ match.match_date }} · {{ match.venue }} · {{ match.group_name }} 组</p>
+</header>
+<main class="container">
+  {% if h2h %}
+  <section class="h2h">
+    <h3>📜 历史交锋</h3>
+    <p>{{ h2h.summary }}</p>
+  </section>
+  {% endif %}
+
+  <section class="ai-report">
+    <h2>🧠 AI 分析报告</h2>
+    <p class="ai-disclaimer">基于知识库数据，分析双方各自优劣势，不预测比分。</p>
+    <div class="report-body">{{ report | safe }}</div>
+  </section>
+
+  <section class="players-comparison">
+    <div class="team-col">
+      <h3>🔵 {{ team_a.name }} 球员状态</h3>
+      {% if a_players_by_cat %}
+        {% for cat, plist in a_players_by_cat.items() %}
+        <div class="player-mini-group"><strong>{{ cat_labels.get(cat, cat) }}</strong>
+          {% for p in plist %}
+          <span class="player-tag">{{ p.name }}<i>({{ p.status }})</i></span>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="no-players">暂无球员数据</p>
+      {% endif %}
+    </div>
+    <div class="team-col">
+      <h3>🔴 {{ team_b.name }} 球员状态</h3>
+      {% if b_players_by_cat %}
+        {% for cat, plist in b_players_by_cat.items() %}
+        <div class="player-mini-group"><strong>{{ cat_labels.get(cat, cat) }}</strong>
+          {% for p in plist %}
+          <span class="player-tag">{{ p.name }}<i>({{ p.status }})</i></span>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="no-players">暂无球员数据</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <a href="/" class="btn-back">← 返回赛程</a>
+</main>
+{% else %}
+<!-- 404 -->
+<main class="container">
+  <section class="match-404">
+    <h2>404</h2>
+    <p>比赛不存在</p>
+    <a href="/" class="btn-back">← 返回赛程</a>
+  </section>
+</main>
+{% endif %}
+</body>
+</html>

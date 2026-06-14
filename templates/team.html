@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% if team %}
+<title>{{ team.name }} ({{ team.fifa_code }}) - 球队档案</title>
+{% else %}
+<title>球队未找到</title>
+{% endif %}
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{% if team %}
+<header class="header">
+  <h1>{{ team.name }} ({{ team.fifa_code }})</h1>
+  <p class="subtitle">{{ team.group_name }} 组{% if team.fifa_rank %} · FIFA排名 #{{ team.fifa_rank }}{% endif %}</p>
+</header>
+<main class="container">
+  {% if team.has_detail %}
+  <!-- 有详细数据的重点球队 -->
+  <section class="team-brief">
+    <div class="info-grid">
+      <div class="info-item"><strong>教练</strong>{{ team.coach }}</div>
+      <div class="info-item"><strong>战术风格</strong>{{ team.style }}</div>
+      <div class="info-item"><strong>优势</strong>{{ team.strengths }}</div>
+      <div class="info-item"><strong>短板</strong>{{ team.weaknesses }}</div>
+    </div>
+  </section>
+  <section class="players-section">
+    <h2>球员名单（分层）</h2>
+    {% for cat, plist in players_by_cat.items() %}
+    <div class="player-category">
+      <h3>{{ cat_labels.get(cat, cat) }} <span class="count">{{ plist|length }}人</span></h3>
+      {% for p in plist %}
+      <details class="player-card">
+        <summary class="player-summary">
+          <span class="player-name">{{ p.name }}</span>
+          <span class="player-pos">{{ p.position }}</span>
+          <span class="player-age">{{ p.age }}岁</span>
+          <span class="player-status {{ '健康' if '健康' in p.status else '' }}">{{ p.status }}</span>
+        </summary>
+        <div class="player-detail">
+          <p class="recent-form">{{ p.recent_form }}</p>
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </section>
+  {% else %}
+  <!-- 数据待补充的球队 -->
+  <section class="team-placeholder">
+    <div class="icon">📋</div>
+    <h2>{{ team.name }} — 数据待补充</h2>
+    <p>该球队的详细档案（教练、风格、球员名单）尚未录入。</p>
+    <p>目前仅收录法国、巴西、德国、西班牙、阿根廷、英格兰6支重点球队的完整数据。</p>
+    <p style="margin-top:12px;font-size:.82rem;">数据持续完善中，敬请期待。</p>
+  </section>
+  {% endif %}
+  <a href="/" class="btn-back">← 返回赛程</a>
+</main>
+{% else %}
+<!-- 404 -->
+<main class="container">
+  <section class="match-404">
+    <h2>404</h2>
+    <p>球队不存在</p>
+    <a href="/" class="btn-back">← 返回赛程</a>
+  </section>
+</main>
+{% endif %}
+</body>
+</html>
