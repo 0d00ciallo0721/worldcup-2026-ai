@@ -70,7 +70,7 @@ def index():
         group_names=group_names,
         completed_count=completed_count,
         total_matches=72,
-        data_date="2026年6月25日",
+        data_date="2026年6月26日",
     )
 
 
