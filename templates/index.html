@@ -14,6 +14,12 @@
 
 <main class="container">
 
+  <!-- ── 数据时间标记 ── -->
+  <div class="data-marker">
+    📊 数据截至 {{ data_date }} · 已完赛 {{ completed_count }}/{{ total_matches }} 场
+    · <a href="#standings-top" style="color:#38bdf8;">查看积分榜↓</a>
+  </div>
+
   <!-- ── 球队分组卡片 ── -->
   <section class="groups-overview">
     {% for group_name, team_list in groups.items() %}
@@ -31,45 +37,76 @@
     {% endfor %}
   </section>
 
-  <!-- ── 赛程时间线 ── -->
-  <section class="schedule-timeline">
-    <h2>📅 完整小组赛程（北京时间）</h2>
+  <!-- ── 按组：积分榜 + 赛程 ── -->
+  <div id="standings-top"></div>
+  {% for g in group_names %}
+  <section class="group-section-full">
+    <h2 class="group-section-title">{{ g }} 组</h2>
 
-    {% set current_date = namespace(value='') %}
-    {% for m in all_matches %}
-      {% set date_part = m.match_date.split(' ')[0] %}
-      {% if date_part != current_date.value %}
-        {% set current_date.value = date_part %}
-        <div class="date-divider">
-          <span class="date-badge">{{ date_part }}</span>
-          <span class="date-weekday"></span>
-        </div>
-      {% endif %}
+    <!-- 积分榜 -->
+    {% if standings.get(g) %}
+    <table class="standings-table">
+      <thead>
+        <tr>
+          <th>#</th><th>球队</th><th>赛</th><th>胜</th><th>平</th><th>负</th>
+          <th>进</th><th>失</th><th>净</th><th>分</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in standings[g] %}
+        <tr class="{{ 'qualified' if loop.index <= 2 else '' }}">
+          <td>{{ loop.index }}</td>
+          <td><a href="/team/{{ s.team_id }}">{{ s.fifa_code }} {{ s.name }}</a></td>
+          <td>{{ s.gp }}</td><td>{{ s.w }}</td><td>{{ s.d }}</td><td>{{ s.l }}</td>
+          <td>{{ s.gf }}</td><td>{{ s.ga }}</td>
+          <td class="{{ 'positive' if s.gd > 0 else 'negative' if s.gd < 0 else '' }}">{{ '%+d'|format(s.gd) }}</td>
+          <td class="pts">{{ s.pts }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
 
-      <div class="match-row">
+    <!-- 该组比赛 -->
+    <div class="group-matches">
+      {% for m in matches_by_group[g] %}
+      <div class="match-row {% if m.is_completed %}match-completed{% endif %}">
         <span class="match-time">{{ m.match_date.split(' ')[1] }}</span>
-        <span class="match-group-tag">{{ m.group_name }}组</span>
+        <span class="match-date-short">{{ m.match_date.split(' ')[0] }}</span>
+
         <a href="/team/{{ m.team_a.id }}" class="match-team">
-          {{ m.team_a.name }}
-          <em>{{ m.team_a.fifa_code }}</em>
+          {{ m.team_a.name }} <em>{{ m.team_a.fifa_code }}</em>
           {% if m.team_a.fifa_rank %}<span class="rank-tag">#{{ m.team_a.fifa_rank }}</span>{% endif %}
         </a>
+
+        {% if m.is_completed %}
+        <span class="match-score">{{ m.team_a_score }} - {{ m.team_b_score }}</span>
+          {% if m.ai_pred %}
+          <span class="pred-badge {{ 'pred-correct' if m.pred_correct else 'pred-wrong' }}">
+            {{ '✅' if m.pred_correct else '❌' }} AI{{ m.ai_pred }}
+          </span>
+          {% endif %}
+        {% else %}
         <span class="match-vs">VS</span>
+        {% endif %}
+
         <a href="/team/{{ m.team_b.id }}" class="match-team">
-          {{ m.team_b.name }}
-          <em>{{ m.team_b.fifa_code }}</em>
+          {{ m.team_b.name }} <em>{{ m.team_b.fifa_code }}</em>
           {% if m.team_b.fifa_rank %}<span class="rank-tag">#{{ m.team_b.fifa_rank }}</span>{% endif %}
         </a>
+
         <span class="match-venue">{{ m.venue }}</span>
         <a href="/match/{{ m.id }}" class="btn-analysis">AI分析</a>
       </div>
-    {% endfor %}
+      {% endfor %}
+    </div>
   </section>
+  {% endfor %}
 
 </main>
 
 <footer class="footer">
-  数据来源：FIFA官方抽签结果（2025年12月5日）+ 各队官宣26人名单 · AI分析仅供参考 · 不构成预测或投注建议
+  数据来源：CCTV体育、新浪体育、新华网（截至{{ data_date }}） · AI分析仅供参考 · 不构成预测或投注建议
 </footer>
 </body>
 </html>

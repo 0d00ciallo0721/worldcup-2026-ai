@@ -126,3 +126,171 @@ details[open] .player-summary::before{transform:rotate(90deg)}
 .btn-back{display:inline-block;margin-top:16px;padding:8px 20px;border-radius:6px;background:#334155;color:#e2e8f0;font-size:.85rem}
 .btn-back:hover{background:#475569}
 .footer{text-align:center;padding:20px;color:#475569;font-size:.75rem}
+
+/* ═══ 新增：比分 & 积分榜 & 预测对比样式 ═══ */
+
+/* === 数据时间标记 === */
+.data-marker {
+  text-align: center;
+  padding: 8px 16px;
+  margin-bottom: 20px;
+  background: #1e3a5f;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  font-size: .82rem;
+  color: #94a3b8;
+}
+
+/* === 按组全宽展示 === */
+.group-section-full {
+  margin-bottom: 32px;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.group-section-title {
+  font-size: 1.15rem;
+  color: #38bdf8;
+  background: #1e293b;
+  padding: 10px 16px;
+  margin: 0;
+}
+
+/* === 积分榜 === */
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .78rem;
+  margin-bottom: 8px;
+}
+.standings-table th {
+  background: #0f172a;
+  color: #64748b;
+  padding: 6px 4px;
+  font-weight: 600;
+  text-align: center;
+  font-size: .7rem;
+}
+.standings-table td {
+  padding: 5px 4px;
+  text-align: center;
+  border-bottom: 1px solid #1e293b;
+}
+.standings-table td:first-child { color: #64748b; min-width: 18px; }
+.standings-table td:nth-child(2) { text-align: left; min-width: 100px; }
+.standings-table td:nth-child(2) a { color: #e2e8f0; }
+.standings-table td:nth-child(2) a:hover { color: #818cf8; }
+.standings-table .pts { font-weight: 700; color: #fbbf24; font-size: .85rem; }
+.standings-table .positive { color: #34d399; }
+.standings-table .negative { color: #f87171; }
+.standings-table tr.qualified td:first-child {
+  border-left: 3px solid #10b981;
+}
+
+/* === 比赛行（含比分） === */
+.group-matches { padding: 8px 10px 10px; }
+.match-completed { background: rgba(16, 185, 129, 0.06); }
+.match-score {
+  color: #fbbf24;
+  font-weight: 900;
+  font-size: .85rem;
+  min-width: 48px;
+  text-align: center;
+  letter-spacing: .05em;
+}
+.match-date-short {
+  color: #64748b;
+  font-size: .7rem;
+  min-width: 52px;
+}
+
+/* === 预测标签 === */
+.pred-badge {
+  font-size: .65rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.pred-correct { background: #065f46; color: #6ee7b7; }
+.pred-wrong { background: #7f1d1d; color: #fca5a5; }
+
+/* === 比赛结果横幅（详情页） === */
+.match-result-banner {
+  text-align: center;
+  padding: 20px 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border: 2px solid #334155;
+  border-radius: 10px;
+}
+.result-score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.result-score-num {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fbbf24;
+  letter-spacing: .05em;
+}
+.result-team {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+.result-team em {
+  color: #64748b;
+  font-size: .7em;
+  display: block;
+}
+.result-status {
+  color: #10b981;
+  font-size: .8rem;
+  margin-top: 8px;
+}
+
+/* === AI预测 vs 实际（详情页） === */
+.prediction-comparison {
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+.prediction-comparison h3 {
+  font-size: .9rem;
+  margin-bottom: 10px;
+  color: #e2e8f0;
+}
+.pred-compare-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: .82rem;
+}
+.pred-side {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pred-label {
+  font-size: .68rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
+.pred-vs-arrow {
+  color: #64748b;
+  font-size: 1.2rem;
+}
+.pred-outcome {
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: .85rem;
+}

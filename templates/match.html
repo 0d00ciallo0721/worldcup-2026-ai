@@ -21,6 +21,40 @@
   <p class="subtitle">{{ match.match_date }} · {{ match.venue }} · {{ match.group_name }} 组</p>
 </header>
 <main class="container">
+
+  <!-- ── 比赛结果横幅（已完赛才显示）── -->
+  {% if is_completed %}
+  <section class="match-result-banner">
+    <div class="result-score">
+      <span class="result-team">{{ team_a.name }} <em>{{ team_a.fifa_code }}</em></span>
+      <span class="result-score-num">{{ match.team_a_score }} - {{ match.team_b_score }}</span>
+      <span class="result-team">{{ team_b.name }} <em>{{ team_b.fifa_code }}</em></span>
+    </div>
+    <div class="result-status">比赛已结束</div>
+  </section>
+
+  <!-- ── AI预测 vs 实际结果 ── -->
+  {% if pred_result %}
+  <section class="prediction-comparison">
+    <h3>📊 AI大小球预测 vs 实际结果</h3>
+    <div class="pred-compare-row">
+      <div class="pred-side">
+        <span class="pred-label">AI预测</span>
+        <strong>{{ pred_result.prediction }}</strong>
+      </div>
+      <span class="pred-vs-arrow">→</span>
+      <div class="pred-side">
+        <span class="pred-label">实际</span>
+        <strong>{{ pred_result.actual }}</strong>
+      </div>
+      <div class="pred-outcome {{ 'pred-correct' if pred_result.correct else 'pred-wrong' }}">
+        {{ '✅ 预测正确' if pred_result.correct else '❌ 预测错误' }}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+
   {% if h2h %}
   <section class="h2h">
     <h3>📜 历史交锋</h3>

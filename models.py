@@ -311,7 +311,18 @@ def init_db():
         FOREIGN KEY (team_id) REFERENCES teams(id))""")
     c.execute("""CREATE TABLE IF NOT EXISTS matches (
         id INTEGER PRIMARY KEY, team_a_id INTEGER, team_b_id INTEGER,
-        match_date TEXT, venue TEXT, group_name TEXT)""")
+        match_date TEXT, venue TEXT, group_name TEXT,
+        team_a_score INTEGER DEFAULT NULL,
+        team_b_score INTEGER DEFAULT NULL)""")
+    # 兼容已有数据库：无分数字段的旧库自动加列
+    try:
+        c.execute("ALTER TABLE matches ADD COLUMN team_a_score INTEGER DEFAULT NULL")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE matches ADD COLUMN team_b_score INTEGER DEFAULT NULL")
+    except sqlite3.OperationalError:
+        pass
     c.execute("""CREATE TABLE IF NOT EXISTS head_to_head (
         id INTEGER PRIMARY KEY, team_a_id INTEGER, team_b_id INTEGER,
         summary TEXT)""")
@@ -450,3 +461,89 @@ def save_report_cache(match_id, report_html):
                  (match_id, report_html))
     conn.commit()
     conn.close()
+
+
+# ── 真实比分与积分榜 ──
+
+def update_match_scores(scores_dict):
+    """批量更新比分。scores_dict: {match_id: (team_a_score, team_b_score)}"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    for match_id, (a_score, b_score) in scores_dict.items():
+        c.execute("UPDATE matches SET team_a_score=?, team_b_score=? WHERE id=?",
+                  (a_score, b_score, match_id))
+    conn.commit()
+    conn.close()
+
+
+def get_group_standings():
+    """从比分动态计算积分榜。返回 {group_name: [standings_rows]}，组内按积分>净胜球>进球排序"""
+    conn = sqlite3.connect(DB_PATH); conn.row_factory = sqlite3.Row
+    matches = conn.execute(
+        "SELECT * FROM matches WHERE team_a_score IS NOT NULL AND team_b_score IS NOT NULL"
+    ).fetchall()
+    teams = conn.execute("SELECT * FROM teams").fetchall()
+    conn.close()
+
+    # 初始化
+    standings = {}
+    for t in teams:
+        standings[t["id"]] = {
+            "team_id": t["id"], "name": t["name"], "fifa_code": t["fifa_code"],
+            "group_name": t["group_name"], "fifa_rank": t["fifa_rank"],
+            "gp": 0, "w": 0, "d": 0, "l": 0, "gf": 0, "ga": 0, "gd": 0, "pts": 0
+        }
+
+    for m in matches:
+        a_id = m["team_a_id"]
+        b_id = m["team_b_id"]
+        if a_id not in standings or b_id not in standings:
+            continue
+        a_s, b_s = m["team_a_score"], m["team_b_score"]
+
+        standings[a_id]["gp"] += 1; standings[b_id]["gp"] += 1
+        standings[a_id]["gf"] += a_s; standings[a_id]["ga"] += b_s
+        standings[b_id]["gf"] += b_s; standings[b_id]["ga"] += a_s
+
+        if a_s > b_s:
+            standings[a_id]["w"] += 1; standings[a_id]["pts"] += 3
+            standings[b_id]["l"] += 1
+        elif a_s < b_s:
+            standings[b_id]["w"] += 1; standings[b_id]["pts"] += 3
+            standings[a_id]["l"] += 1
+        else:
+            standings[a_id]["d"] += 1; standings[b_id]["d"] += 1
+            standings[a_id]["pts"] += 1; standings[b_id]["pts"] += 1
+
+    for s in standings.values():
+        s["gd"] = s["gf"] - s["ga"]
+
+    # 按组归并并排序
+    grouped = {}
+    for s in standings.values():
+        g = s["group_name"]
+        grouped.setdefault(g, []).append(s)
+    for g in grouped:
+        grouped[g].sort(key=lambda x: (-x["pts"], -x["gd"], -x["gf"]))
+    return grouped
+
+
+def get_prediction_for_match(match_id):
+    """从缓存报告中解析大小球预测。返回 '大球' / '小球' / None"""
+    import re
+    report = get_cached_report(match_id)
+    if not report:
+        return None
+    # 尝试匹配 DeepSeek 格式
+    m = re.search(r'倾向[：:]\s*<strong[^>]*>(.*?)</strong>', report)
+    if m:
+        text = m.group(1)
+        if '大球' in text:
+            return '大球'
+        elif '小球' in text:
+            return '小球'
+    # 降级匹配规则引擎格式
+    m2 = re.search(r'倾向[：:].*?(大球|小球)', report)
+    if m2:
+        return m2.group(1)
+    return None
